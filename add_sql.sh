@@ -1,14 +1,31 @@
-# Insert your URI below
-URI="postgres://jmulkzmzzwaath:fdcd4611512ddc046daaefbff2396ee23074d280e013e1de5692afa4d1eda3e1@ec2-34-225-103-117.compute-1.amazonaws.com:5432/daev2l01mpuko4"
+# Construct the URI from the .env
+DB_HOST=''
+DB_NAME=''
+DB_USER=''
+DB_PORT=''
+DB_PASSWORD=''
 
-# Create the /sql folder for scripts.
-mkdir sql
+while IFS= read -r line
+do
+  if [[ $line == DB_HOST* ]]
+  then
+    DB_HOST=$(cut -d "=" -f2- <<< $line)
+  elif [[ $line == DB_NAME* ]]
+  then
+    DB_NAME=$(cut -d "=" -f2- <<< $line)
+  elif [[ $line == DB_USER* ]]
+  then
+    DB_USER=$(cut -d "=" -f2- <<< $line)
+  elif [[ $line == DB_PORT* ]]
+  then
+    DB_PORT=$(cut -d "=" -f2- <<< $line)
+  elif [[ $line == DB_PASSWORD* ]]
+  then
+    DB_PASSWORD=$(cut -d "=" -f2- <<< $line)
+  fi
+done < ".env"
 
-# Download all necessary sql scripts into /sql.
-curl https://raw.githubusercontent.com/remmyzen/AppStoreRawDemo/main/sql/AppStoreSchema.sql --output sql/AppStoreSchema.sql
-curl https://raw.githubusercontent.com/remmyzen/AppStoreRawDemo/main/sql/AppStoreCustomers.sql --output sql/AppStoreCustomers.sql
-curl https://raw.githubusercontent.com/remmyzen/AppStoreRawDemo/main/sql/AppStoreGames.sql --output sql/AppStoreGames.sql
-curl https://raw.githubusercontent.com/remmyzen/AppStoreRawDemo/main/sql/AppStoreDownloads.sql --output sql/AppStoreDownloads.sql
+URI="postgres://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME"
 
 # Run the scripts to insert data.
 psql ${URI} -f sql/AppStoreSchema.sql
